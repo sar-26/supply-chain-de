@@ -1,0 +1,18 @@
+version: 2
+
+models:
+  - name: int_daily_demand
+    description: "Trailing 28-day average daily demand per product per dark store (moving-average forecast baseline)."
+    columns:
+      - name: avg_daily_demand
+        tests: [not_null]
+
+  - name: recommendations
+    description: "Reorder points and suggested warehouse-to-dark-store transfers per product per dark store."
+    columns:
+      - name: recommendation_key
+        tests: [unique, not_null]
+      - name: reorder_flag
+        tests:
+          - accepted_values:
+              values: ['Y', 'N']

@@ -1,0 +1,12 @@
+version: 2
+
+models:
+  - name: dq_issues
+    description: "Data-quality and business-rule issues with RAG severity, one row per problem."
+    columns:
+      - name: issue_key
+        tests: [unique, not_null]
+      - name: severity
+        tests:
+          - accepted_values:
+              values: ['RED', 'AMBER']

@@ -1,0 +1,14 @@
+supply_chain:
+  target: dev
+  outputs:
+    dev:
+      type: oracle
+      user: "{{ env_var('DB_USER') }}"
+      pass: "{{ env_var('DB_PASSWORD') }}"
+      database: "{{ env_var('DB_DATABASE') }}"
+      protocol: tcps
+      host: "{{ env_var('DB_HOST') }}"
+      port: 1521
+      service: "{{ env_var('DB_SERVICE') }}"
+      schema: "{{ env_var('DB_SCHEMA') }}"
+      threads: 4

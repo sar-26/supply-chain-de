@@ -1,0 +1,33 @@
+# ── Secrets & credentials — NEVER commit ──────────────────────
+.env
+.env.*
+!.env.example
+wallet/
+*wallet*/
+*.pem
+*.sso
+*.p12
+tnsnames.ora
+sqlnet.ora
+airflow_settings.yaml
+
+# ── dbt build artifacts (any folder) ──────────────────────────
+**/target/
+**/dbt_packages/
+**/logs/
+.user.yml
+
+# ── Astro / Airflow local metadata ────────────────────────────
+.astro/
+
+# ── Python ────────────────────────────────────────────────────
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# ── OS / editor ───────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

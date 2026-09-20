@@ -1,0 +1,10 @@
+# ============================================================
+# APPEND these lines to the BOTTOM of airflow-scm/Dockerfile
+# (keep the existing FROM ... line that astro dev init created).
+# They build an isolated virtualenv holding dbt, so dbt's pinned
+# versions never conflict with Airflow's own dependencies.
+# ============================================================
+
+RUN python -m venv /usr/local/airflow/dbt_venv && \
+    /usr/local/airflow/dbt_venv/bin/pip install --no-cache-dir \
+        "dbt-core~=1.10.0" "dbt-oracle==1.10.0"

@@ -1,0 +1,55 @@
+version: 2
+
+models:
+  - name: fact_sales
+    description: "Sales at order-line grain with the full margin chain."
+    columns:
+      - name: sales_key
+        tests: [unique, not_null]
+      - name: date_key
+        tests:
+          - not_null
+          - relationships: { to: ref('dim_date'), field: date_key }
+      - name: product_key
+        tests:
+          - not_null
+          - relationships: { to: ref('dim_product'), field: product_key }
+      - name: customer_key
+        tests:
+          - relationships: { to: ref('dim_customer'), field: customer_key }
+      - name: location_key
+        tests:
+          - relationships: { to: ref('dim_location'), field: location_key }
+
+  - name: fact_inventory_movement
+    description: "Stock movement events with signed qty_delta."
+    columns:
+      - name: movement_key
+        tests: [unique, not_null]
+      - name: product_key
+        tests:
+          - relationships: { to: ref('dim_product'), field: product_key }
+      - name: location_key
+        tests:
+          - relationships: { to: ref('dim_location'), field: location_key }
+
+  - name: fact_shipment
+    description: "Shipments with freight cost and delivery time."
+    columns:
+      - name: shipment_key
+        tests: [unique, not_null]
+
+  - name: fact_procurement
+    description: "Procurement at PO-line grain with buy cost."
+    columns:
+      - name: procurement_key
+        tests: [unique, not_null]
+      - name: supplier_key
+        tests:
+          - relationships: { to: ref('dim_supplier'), field: supplier_key }
+
+  - name: fact_replenishment
+    description: "Warehouse-to-dark-store replenishment quantities."
+    columns:
+      - name: replen_key
+        tests: [unique, not_null]

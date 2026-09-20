@@ -1,0 +1,18 @@
+version: 2
+
+sources:
+  - name: scm
+    description: Raw source tables from the Phase 1 generator.
+    schema: "ADMIN"
+    tables:
+      - name: customer
+      - name: product
+      - name: location
+      - name: supplier
+      - name: sales_order
+      - name: order_item
+      - name: inventory_movement
+      - name: replenishment
+      - name: shipment
+      - name: purchase_order
+      - name: purchase_order_item

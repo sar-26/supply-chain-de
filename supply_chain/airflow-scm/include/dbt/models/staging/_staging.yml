@@ -1,0 +1,88 @@
+version: 2
+
+models:
+  - name: stg_customer
+    description: "Cleaned customer records."
+    columns:
+      - name: customer_id
+        tests: [unique, not_null]
+
+  - name: stg_product
+    description: "Cleaned product catalog with list price and standard cost."
+    columns:
+      - name: product_id
+        tests: [unique, not_null]
+
+  - name: stg_location
+    description: "Cleaned physical locations (warehouses, dark stores, supplier sites)."
+    columns:
+      - name: location_id
+        tests: [unique, not_null]
+      - name: location_type
+        tests:
+          - accepted_values:
+              values: ['WAREHOUSE', 'DARK_STORE', 'SUPPLIER']
+
+  - name: stg_supplier
+    description: "Cleaned supplier master."
+    columns:
+      - name: supplier_id
+        tests: [unique, not_null]
+
+  - name: stg_sales_order
+    description: "Cleaned order headers."
+    columns:
+      - name: order_id
+        tests: [unique, not_null]
+      - name: customer_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_customer')
+              field: customer_id
+
+  - name: stg_order_item
+    description: "Cleaned order lines with transacted price, discount and tax."
+    columns:
+      - name: order_item_id
+        tests: [unique, not_null]
+      - name: order_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_sales_order')
+              field: order_id
+
+  - name: stg_inventory_movement
+    description: "Stock movement event log."
+    columns:
+      - name: movement_id
+        tests: [unique, not_null]
+      - name: move_type
+        tests:
+          - accepted_values:
+              values: ['INBOUND', 'SALE', 'TRANSFER', 'ADJUSTMENT']
+
+  - name: stg_replenishment
+    description: "Warehouse to dark-store replenishment requests."
+    columns:
+      - name: replen_id
+        tests: [unique, not_null]
+
+  - name: stg_shipment
+    description: "Order shipment legs."
+    columns:
+      - name: shipment_id
+        tests: [unique, not_null]
+
+  - name: stg_purchase_order
+    description: "Procurement order headers."
+    columns:
+      - name: po_id
+        tests: [unique, not_null]
+
+  - name: stg_purchase_order_item
+    description: "Procurement order lines with unit cost."
+    columns:
+      - name: po_item_id
+        tests: [unique, not_null]

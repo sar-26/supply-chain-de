@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Supply Chain · Home</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{--bg:#0B0E14;--panel:#131926;--panel2:#0F1420;--line:#212C40;--text:#EAEEF5;--muted:#7E8AA0;--cyan:#34D3EE;--red:#FF5D5D;--amber:#FFB020;--green:#3DD68C;--radius:14px;padding-top:env(safe-area-inset-top,0);padding-bottom:env(safe-area-inset-bottom,0)}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);font-family:"Inter",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .num{font-family:"Space Grotesk";font-variant-numeric:tabular-nums}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 24px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:600;font-size:16px}.brand .glyph{color:var(--cyan);font-size:20px}
+  .nav{display:flex;gap:4px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:3px}
+  .nav button{background:none;border:0;color:var(--muted);font:inherit;font-size:13px;padding:6px 14px;border-radius:7px;cursor:pointer}
+  .nav button.on{background:var(--cyan);color:#06222a;font-weight:600}.nav button:not(.on):hover{color:var(--text)}
+  .live{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+  .pulse{width:9px;height:9px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(61,214,140,.6)}70%{box-shadow:0 0 0 8px rgba(61,214,140,0)}100%{box-shadow:0 0 0 0 rgba(61,214,140,0)}}
+  @media(prefers-reduced-motion:reduce){.pulse{animation:none}}
+  .wrap{padding:18px 24px;max-width:1360px;margin:0 auto}
+  .crumb{display:flex;align-items:center;gap:8px;font-size:13.5px;margin-bottom:16px;flex-wrap:wrap}
+  .crumb a{color:var(--cyan);cursor:pointer}.crumb a:hover{text-decoration:underline}.crumb span.sep{color:var(--muted)}.crumb b{font-weight:600}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:13px;margin-bottom:16px}
+  .kpi{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:15px 17px;overflow:hidden}
+  .kpi::before{content:"";position:absolute;left:0;top:0;height:100%;width:3px;background:var(--cyan)}.kpi.sec::before{background:var(--muted)}
+  .kpi .l{font-size:12px;color:var(--muted)}.kpi .v{font-size:23px;font-weight:600;margin-top:7px;line-height:1}
+  .grid{display:grid;grid-template-columns:1.6fr 1fr;gap:14px}@media(max-width:960px){.grid{grid-template-columns:1fr}}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:15px 17px}
+  .p-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:10px}.p-head h2{font-size:14px;margin:0}
+  .sub{color:var(--muted);font-size:12px;margin-bottom:10px}
+  .tablewrap{max-height:430px;overflow:auto}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;white-space:nowrap}
+  th,td{padding:8px 9px;border-bottom:1px solid var(--line);text-align:left}
+  th{color:var(--muted);font-weight:500}th.r,td.r{text-align:right}td.r{font-family:"Space Grotesk";font-variant-numeric:tabular-nums}
+  tr.click{cursor:pointer}tr.click:hover td{background:var(--panel2)}.drill-ic{color:var(--muted);font-size:11px}
+  tr.self td{background:rgba(52,211,238,.06)}
+  .badge{font-size:11px;padding:2px 9px;border-radius:20px;color:#0B0E14;font-weight:600}
+  .badge.Profitable{background:var(--green)}.badge.Balanced{background:var(--amber)}.badge.Loss{background:var(--red)}
+  .badge.red{background:var(--red)}.badge.amber{background:var(--amber)}.badge.green{background:var(--green)}
+  .neg{color:var(--red)}.pos{color:var(--green)}.muted{color:var(--muted)}
+  canvas{max-height:230px}
+  .ainote{border-left:3px solid var(--cyan);padding:11px 16px;background:var(--panel2);border-radius:0 8px 8px 0}
+  .ainote .ah{font-size:14px;font-weight:600;margin-bottom:6px}.ainote ul{margin:6px 0;padding-left:18px}.ainote li{font-size:13px;margin:4px 0;line-height:1.5}.ainote .aact{margin-top:9px;font-size:13px;color:var(--muted)}
+  .invest{display:inline-flex;align-items:center;gap:6px;margin-top:12px;background:rgba(255,93,93,.1);border:1px solid #5a2b30;color:#ff9a9a;font:inherit;font-size:12.5px;padding:8px 13px;border-radius:9px;cursor:pointer}.invest:hover{border-color:var(--red)}
+  .ph{padding:60px 20px;text-align:center;color:var(--muted)}.ph b{color:var(--text);display:block;font-size:16px;margin-bottom:6px}
+  .hide{display:none}
+</style>
+</head>
+<body><a href="./" style="position:fixed;left:14px;bottom:14px;z-index:50;background:#0F1420;color:#7E8AA0;border:1px solid #212C40;border-radius:20px;padding:7px 13px;font:500 12.5px Inter,system-ui,sans-serif;text-decoration:none">&larr; All demos</a>
+<div class="topbar">
+  <div class="brand"><span class="glyph">⬡</span> Ops Command</div>
+  <div class="nav" id="nav"><button data-v="home" class="on">Home · Profitability</button><a href="demo-network.html" style="color:var(--muted);text-decoration:none;font-size:13px;padding:6px 14px;border-radius:7px">Network · Demand–Supply</a></div>
+  <div class="live"><span class="pulse"></span><span>Live · sample data</span></div>
+</div>
+<div class="wrap" id="view-home">
+  <div class="crumb" id="crumb"></div>
+  <div class="kpis" id="kpis"></div>
+  <div class="grid">
+    <div class="panel">
+      <div class="p-head"><h2 id="tblTitle">Profitability by region</h2></div>
+      <div class="sub">Net profit = Gross profit − Logistics (last-mile freight; warehouse handling added at hub level). Green profitable · amber balanced · red loss.</div>
+      <div class="tablewrap"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+      <div id="investSlot"></div>
+    </div>
+    <div class="panel"><div class="p-head"><h2>Revenue &amp; gross profit</h2>
+      <div class="nav" id="daySeg" style="background:var(--panel2)"><button data-days="30" class="on">30d</button><button data-days="60">60d</button><button data-days="90">90d</button></div></div>
+      <canvas id="trend"></canvas></div>
+  </div>
+  <div class="panel" id="aiPanel" style="margin-top:14px"></div>
+</div>
+<div class="wrap hide" id="view-network"><div class="panel"><div class="ph"><b>Network · Demand–Supply</b>The control-tower map: stock health, demand-supply gaps, and where stock can be sourced. Where a Home loss gets explained (stockouts → lost sales) and fixed (sourcing).</div></div></div>
+<div class="wrap hide" id="view-lists"><div class="panel"><div class="ph"><b>Lists · warehouses &amp; dark stores</b>Master lists with health &amp; the open/late-PO supplier view. Building next (stage 3).</div></div></div>
+<script>
+const C={cyan:"#34D3EE",green:"#3DD68C",red:"#FF5D5D",amber:"#FFB020",muted:"#7E8AA0",line:"#212C40"};
+Chart.defaults.color=C.muted;Chart.defaults.font.family="Inter, sans-serif";Chart.defaults.font.size=12;
+const fmt=n=>Number(Math.round(n)).toLocaleString("en-IN"),money=n=>(n<0?"-₹":"₹")+fmt(Math.abs(n));
+function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const rand=rng(53);
+const CATGROSS={"Personal Care":.35,"Household":.30,"Snacks":.28,"Grocery":.24,"Beverages":.24,"Dairy":.20,"Fruits & Veg":.17};
+const CATFRT={"Personal Care":.05,"Household":.07,"Snacks":.06,"Grocery":.09,"Beverages":.12,"Dairy":.18,"Fruits & Veg":.23};
+const CATS=Object.keys(CATGROSS);
+const REGIONS={North:{wh:"Delhi",cities:["Delhi","Jaipur","Lucknow"]},South:{wh:"Bengaluru",cities:["Bengaluru","Chennai","Kochi","Hyderabad"]},East:{wh:"Kolkata",cities:["Kolkata","Patna"]},West:{wh:"Mumbai",cities:["Mumbai","Pune","Ahmedabad"]}};
+const statusOf=m=>m<0?"Loss":m<0.10?"Balanced":"Profitable";
+function prods(cat,rev,gR,fR){const n=3+Math.floor(rand()*2),a=[];let left=rev;for(let i=0;i<n;i++){const r=i===n-1?left:Math.round(rev*(0.2+rand()*0.3));left-=r;const g=gR+(rand()-0.5)*0.08,f=fR+(rand()-0.5)*0.06;const gp=Math.round(r*g),lo=Math.round(r*f);a.push({name:cat.split(" ")[0]+" item "+(i+1),rev:r,gp,lo,net:gp-lo,margin:(gp-lo)/r})}return a.sort((x,y)=>x.margin-y.margin)}
+const DATA={};let ALL={rev:0,gp:0,lo:0,net:0,inb:0,out:0};
+for(const r of Object.keys(REGIONS)){const rg=REGIONS[r];const stores=[];let crit=0;
+  for(const city of rg.cities){const base=280000+Math.floor(rand()*260000);const cats=[];let R=0,GP=0,LO=0;
+    for(const cat of CATS){const w=.06+rand()*.22;const rev=Math.round(base*w);const gR=CATGROSS[cat]+(rand()-.5)*.06,fR=CATFRT[cat]+(rand()-.5)*.05;
+      const gp=Math.round(rev*gR),lo=Math.round(rev*fR),net=gp-lo;cats.push({cat,rev,gp,lo,net,margin:net/rev,status:statusOf(net/rev),prod:prods(cat,rev,gR,fR)});R+=rev;GP+=gp;LO+=lo;}
+    const sev=rand()<.3?"red":rand()<.6?"amber":"green";if(sev==="red")crit++;const net=GP-LO;
+    stores.push({id:"DS_"+city,name:city+" DS-1",type:"DS",city,region:r,rev:R,gp:GP,lo:LO,net,margin:net/R,status:statusOf(net/R),sev,inb:1200+Math.floor(rand()*2600),out:1400+Math.floor(rand()*3200),cats});}
+  const sRev=stores.reduce((t,s)=>t+s.rev,0),sGP=stores.reduce((t,s)=>t+s.gp,0),sLO=stores.reduce((t,s)=>t+s.lo,0);
+  const opex=250000+Math.floor(rand()*380000);           // warehouse handling / storage overhead
+  const inb=stores.reduce((t,s)=>t+s.inb,0),out=stores.reduce((t,s)=>t+s.out,0);
+  const whLO=sLO+opex,whNet=sGP-whLO;
+  const wh={id:"WH_"+rg.wh,name:rg.wh+" WH",type:"WH",city:rg.wh,region:r,rev:sRev,gp:sGP,lo:whLO,opex,net:whNet,margin:whNet/sRev,status:statusOf(whNet/sRev),inb:out+9000,out,servedCrit:crit};
+  const rNet=sGP-whLO;
+  DATA[r]={wh,stores,rev:sRev,gp:sGP,lo:whLO,net:rNet,margin:rNet/sRev,status:statusOf(rNet/sRev),inb,out,crit};
+  ALL.rev+=sRev;ALL.gp+=sGP;ALL.lo+=whLO;ALL.inb+=inb;ALL.out+=out;}
+ALL.net=ALL.gp-ALL.lo;ALL.margin=ALL.net/ALL.rev;ALL.status=statusOf(ALL.margin);ALL.crit=Object.values(DATA).reduce((t,d)=>t+d.crit,0);
+
+let scope={region:null,node:null,cat:null},trend,days=30;
+function findNode(id){for(const r of Object.keys(DATA)){if(DATA[r].wh.id===id)return DATA[r].wh;const s=DATA[r].stores.find(x=>x.id===id);if(s)return s}}
+function crumb(){let h=`<a onclick="go(null,null,null)">All India</a>`;
+  if(scope.region)h+=`<span class="sep">›</span>`+(scope.node||scope.cat?`<a onclick="go('${scope.region}',null,null)">${scope.region}</a>`:`<b>${scope.region}</b>`);
+  if(scope.node){const n=findNode(scope.node);h+=`<span class="sep">›</span>`+(scope.cat?`<a onclick="go('${scope.region}','${scope.node}',null)">${n.name}</a>`:`<b>${n.name}</b>`);}
+  if(scope.cat)h+=`<span class="sep">›</span><b>${scope.cat}</b>`;document.getElementById("crumb").innerHTML=h;}
+function tiles(rev,gp,lo,inb,out){const gm=rev?(gp/rev*100).toFixed(1):"0.0";
+  document.getElementById("kpis").innerHTML=[["Revenue",money(rev),""],["Gross profit",money(gp),""],["Gross margin",gm+"%",""],["Logistics cost",money(lo),"sec"],["Inbound units",fmt(inb),"sec"],["Outbound units",fmt(out),"sec"]].map(t=>`<div class="kpi ${t[2]}"><div class="l">${t[0]}</div><div class="v num">${t[1]}</div></div>`).join("");}
+function setThead(c){document.getElementById("thead").innerHTML="<tr>"+c.map(x=>`<th class="${x.r?'r':''}">${x.t}</th>`).join("")+"</tr>"}
+const sb=s=>`<span class="badge ${s}">${s}</span>`;
+function pnlLo(n){return `<td class="r">${money(n.rev)}</td><td class="r">${money(n.gp)}</td><td class="r muted">${money(n.lo)}</td><td class="r ${n.net<0?'neg':'pos'}">${money(n.net)}</td><td class="r">${(n.margin*100).toFixed(1)}%</td><td>${sb(n.status)}</td>`}
+function pnlNoLo(n){return `<td class="r">${money(n.rev)}</td><td class="r">${money(n.gp)}</td><td class="r ${n.net<0?'neg':'pos'}">${money(n.net)}</td><td class="r">${(n.margin*100).toFixed(1)}%</td><td>${sb(n.status)}</td>`}
+function render(){
+  crumb();renderAI();document.getElementById("investSlot").innerHTML="";
+  const node=scope.node?findNode(scope.node):null;
+  if(!scope.region){tiles(ALL.rev,ALL.gp,ALL.lo,ALL.inb,ALL.out);document.getElementById("tblTitle").textContent="Profitability by region";
+    setThead([{t:"Region"},{t:"Revenue",r:1},{t:"Gross profit",r:1},{t:"Net profit",r:1},{t:"Margin",r:1},{t:"Status"},{t:"Critical",r:1}]);
+    document.getElementById("tbody").innerHTML=Object.keys(DATA).map(r=>{const d=DATA[r];return `<tr class="click" onclick="go('${r}',null,null)"><td>${r} <span class="drill-ic">›</span></td>${pnlNoLo(d)}<td class="r">${d.crit?`<span class="badge red">${d.crit}</span>`:'0'}</td></tr>`}).join("");
+    drawTrend(1);return;}
+  if(scope.region&&!node){const d=DATA[scope.region];tiles(d.rev,d.gp,d.lo,d.inb,d.out);document.getElementById("tblTitle").textContent=scope.region+" — warehouse & stores";
+    setThead([{t:"Node"},{t:"Type"},{t:"Revenue",r:1},{t:"Gross profit",r:1},{t:"Net profit",r:1},{t:"Margin",r:1},{t:"Status"},{t:"Health"}]);
+    const rows=[d.wh,...d.stores];
+    document.getElementById("tbody").innerHTML=rows.map(n=>{const hp=n.type==="WH"?(n.servedCrit?`<span class="badge red">${n.servedCrit}</span>`:'<span class="badge green">OK</span>'):`<span class="badge ${n.sev}">${n.sev==="red"?"Critical":n.sev==="amber"?"Watch":"OK"}</span>`;
+      return `<tr class="click" onclick="go('${scope.region}','${n.id}',null)"><td>${n.name} <span class="drill-ic">›</span></td><td class="muted">${n.type==="WH"?"Warehouse":"Dark store"}</td>${pnlNoLo(n)}<td>${hp}</td></tr>`}).join("");
+    drawTrend(d.rev/ALL.rev);return;}
+  if(node.type==="WH"){tiles(node.rev,node.gp,node.lo,node.inb,node.out);document.getElementById("tblTitle").textContent=node.name+" — hub P&L + stores served";
+    setThead([{t:"Node"},{t:"Type"},{t:"Revenue",r:1},{t:"Gross profit",r:1},{t:"Net profit",r:1},{t:"Margin",r:1},{t:"Status"},{t:"Health"}]);
+    let html=`<tr class="self"><td>${node.name} <span class="muted">(hub total)</span></td><td class="muted">Warehouse</td>${pnlNoLo(node)}<td>${node.servedCrit?`<span class="badge red">${node.servedCrit}</span>`:'<span class="badge green">OK</span>'}</td></tr>`;
+    html+=DATA[node.region].stores.map(s=>`<tr class="click" onclick="go('${node.region}','${s.id}',null)"><td>${s.name} <span class="drill-ic">›</span></td><td class="muted">Dark store</td>${pnlNoLo(s)}<td><span class="badge ${s.sev}">${s.sev==="red"?"Critical":s.sev==="amber"?"Watch":"OK"}</span></td></tr>`).join("");
+    document.getElementById("tbody").innerHTML=html;
+    document.getElementById("investSlot").innerHTML=`<div class="sub" style="margin-top:10px">Hub logistics includes warehouse handling opex of ${money(node.opex)} on top of last-mile freight.</div>`;
+    drawTrend(node.rev/ALL.rev);return;}
+  if(node.type==="DS"&&!scope.cat){tiles(node.rev,node.gp,node.lo,node.inb,node.out);document.getElementById("tblTitle").textContent=node.name+" — profitability by category";
+    setThead([{t:"Category"},{t:"Revenue",r:1},{t:"Gross profit",r:1},{t:"Logistics",r:1},{t:"Net profit",r:1},{t:"Margin",r:1},{t:"Status"}]);
+    document.getElementById("tbody").innerHTML=node.cats.slice().sort((a,b)=>a.margin-b.margin).map(c=>`<tr class="click" onclick="go('${node.region}','${node.id}','${c.cat}')"><td>${c.cat} <span class="drill-ic">›</span></td>${pnlLo(c)}</tr>`).join("");
+    if(node.status==="Loss"||node.sev==="red")document.getElementById("investSlot").innerHTML=`<button class="invest" onclick="location.href='demo-network.html'">⚠ Investigate stock issue on Network →</button>`;
+    drawTrend(node.rev/ALL.rev);return;}
+  const cat=node.cats.find(c=>c.cat===scope.cat);tiles(cat.rev,cat.gp,cat.lo,node.inb,node.out);document.getElementById("tblTitle").textContent=node.name+" · "+scope.cat+" — by product";
+  setThead([{t:"Product"},{t:"Revenue",r:1},{t:"Gross profit",r:1},{t:"Logistics",r:1},{t:"Net profit",r:1},{t:"Margin",r:1},{t:"Status"}]);
+  document.getElementById("tbody").innerHTML=cat.prod.map(p=>`<tr><td>${p.name}</td>${pnlLo({rev:p.rev,gp:p.gp,lo:p.lo,net:p.net,margin:p.margin,status:statusOf(p.margin)})}</tr>`).join("");
+  drawTrend(cat.rev/ALL.rev);
+}
+function renderAI(){const p=document.getElementById("aiPanel");const node=scope.node?findNode(scope.node):null;let head,pts,act;
+  if(!scope.region){const worst=Object.keys(DATA).sort((a,b)=>DATA[a].margin-DATA[b].margin)[0];
+    head=`National net margin is ${(ALL.margin*100).toFixed(1)}% after logistics — ${worst} is weakest.`;
+    pts=["Perishables (Dairy, Fruits & Veg) carry the highest freight and the thinnest gross margin — they're the national drag.","Warehouse handling opex compounds the last-mile freight at hub level.","Revenue is strong; the leak is logistics, not sales."];
+    act=`Attack perishable freight (cold-chain routing, pack sizes) and drill ${worst} for the loss-making stores.`;}
+  else if(scope.region&&!node){const d=DATA[scope.region];const loss=d.stores.filter(s=>s.status==="Loss").length;
+    head=`${scope.region}: ${(d.margin*100).toFixed(1)}% net margin, ${loss} store(s) in loss.`;
+    pts=[`${d.wh.name}'s hub logistics (freight + ${money(d.wh.opex)} handling) sets the regional floor.`,"Loss concentrates in high-freight perishable categories at specific stores.",`${d.crit} store(s) are stock-critical — unmet demand adds hidden lost sales.`];
+    act="Open loss stores to see the category drag, then check Network for stockout-driven losses.";}
+  else if(node.type==="WH"){head=`${node.name} runs at ${(node.margin*100).toFixed(1)}% net margin across the stores it feeds.`;
+    pts=[`Handling opex of ${money(node.opex)} sits on top of last-mile freight, pulling the hub margin below its stores'.`,`${node.servedCrit} served store(s) are stock-critical — supply gaps convert straight into lost margin.`,"Consolidating replenishment trips would cut the handling load."];
+    act="Trim handling opex and prioritise replenishment to the critical stores it serves.";}
+  else if(node.type==="DS"&&!scope.cat){const worst=node.cats.slice().sort((a,b)=>a.margin-b.margin)[0];
+    head=`${node.name} is ${node.status.toLowerCase()} at ${(node.margin*100).toFixed(1)}% net margin.`;
+    pts=[`${worst.cat} is the biggest drag (${(worst.margin*100).toFixed(1)}%) — high freight, thin gross.`,`${node.sev==="red"?"Stock-critical: unfulfilled demand is likely costing extra sales.":"Stock is manageable."}`,"Small baskets amplify last-mile freight per rupee sold."];
+    act=`Reprice/repack ${worst.cat}; if the loss is stockout-driven, source stock via Network.`;}
+  else{const cat=node.cats.find(c=>c.cat===scope.cat);head=`${scope.cat} at ${node.name}: ${(cat.margin*100).toFixed(1)}% net margin (${cat.status}).`;
+    pts=["A few products drag this category — see the sorted list.","Freight per rupee is high on heavy/perishable items.","Pack-size or pricing tweaks recover the most here."];
+    act="Reprice or drop the worst products; bundle to dilute freight.";}
+  p.innerHTML=`<div class="p-head"><h2>AI analysis</h2><span class="muted" style="font-size:12px">Claude · cached per scope</span></div><div class="ainote"><div class="ah">${head}</div><ul>${pts.map(x=>`<li>${x}</li>`).join("")}</ul><div class="aact"><strong>Recommended:</strong> ${act}</div></div>`;
+}
+window.go=(region,node,cat)=>{scope={region,node,cat};render();};
+const TREND=(()=>{const a=[],base=ALL.rev/120;let d=new Date(2026,1,1);for(let i=0;i<90;i++){const dd=new Date(d);dd.setDate(d.getDate()+i);const wk=(dd.getDay()==0||dd.getDay()==6)?1.25:1;const ho=(i>28&&i<40)?1.3:1;const nz=.85+((i*29)%20)/100;const rev=Math.round(base*wk*ho*nz);a.push({d:dd.toISOString().slice(5,10),rev,gp:Math.round(rev*.28)})}return a})();
+function drawTrend(share){const t=TREND.slice(-days);trend.data.labels=t.map(x=>x.d);trend.data.datasets[0].data=t.map(x=>Math.round(x.rev*share));trend.data.datasets[1].data=t.map(x=>Math.round(x.gp*share));trend.update();}
+trend=new Chart(document.getElementById("trend"),{type:"line",data:{labels:[],datasets:[{label:"Revenue",data:[],borderColor:C.cyan,backgroundColor:C.cyan+"1A",fill:true,tension:.3,pointRadius:0,borderWidth:2},{label:"Gross profit",data:[],borderColor:C.green,fill:false,tension:.3,pointRadius:0,borderWidth:2}]},options:{interaction:{mode:"index",intersect:false},scales:{x:{grid:{color:C.line},ticks:{maxTicksLimit:8}},y:{grid:{color:C.line},ticks:{callback:v=>"₹"+(v/1000)+"k"}}},plugins:{legend:{position:"top",align:"end",labels:{boxWidth:10,usePointStyle:true}}}}});
+document.getElementById("daySeg").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;[...e.currentTarget.children].forEach(x=>x.classList.remove("on"));b.classList.add("on");days=+b.dataset.days;render();});
+document.getElementById("nav").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;[...e.currentTarget.children].forEach(x=>x.classList.remove("on"));b.classList.add("on");["home","network","lists"].forEach(v=>document.getElementById("view-"+v).classList.toggle("hide",v!==b.dataset.v));});
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ops Command — supply chain control tower (demo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0B0E14;--panel:#131926;--line:#212C40;--text:#EAEEF5;--muted:#7E8AA0;--cyan:#34D3EE;--amber:#FFB020}
+  *{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:980px;margin:0 auto;padding:44px 24px 60px}
+  h1{font-family:"Space Grotesk";font-size:30px;margin:0 0 8px;letter-spacing:-.3px}h1 span{color:var(--cyan)}
+  p.lead{color:var(--muted);font-size:15.5px;line-height:1.6;margin:0 0 20px;max-width:720px}
+  .banner{border:1px solid #5a4a1e;background:rgba(255,176,32,.07);color:#e9c46a;border-radius:10px;padding:11px 15px;font-size:13.5px;line-height:1.5;margin-bottom:26px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}
+  a.card{display:block;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;text-decoration:none;color:inherit;transition:border-color .15s}
+  a.card:hover{border-color:var(--cyan)}
+  .card .tag{font-size:11.5px;color:var(--cyan);font-weight:600;letter-spacing:.2px}
+  .card h2{font-size:18px;margin:8px 0 6px;font-family:"Space Grotesk"}
+  .card p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.55}
+  .card .go{display:inline-block;margin-top:14px;color:var(--cyan);font-size:13px;font-weight:500}
+  .foot{margin-top:34px;color:var(--muted);font-size:13.5px;line-height:1.7}.foot a{color:var(--cyan)}
+</style></head><body><div class="wrap">
+  <h1><span>&#11041;</span> Ops Command</h1>
+  <p class="lead">An end-to-end supply chain data platform for Indian quick-commerce &mdash; Oracle, dbt, Airflow and a Claude-powered data-validation layer, served through a live decision-support app. Three of its views are below.</p>
+  <div class="banner"><b>Demo with sample data.</b> These pages are static copies of the real app so they can run without a database. The real app reads live from Oracle &mdash; see the repository README for the architecture and how to run it.</div>
+  <div class="cards">
+    <a class="card" href="demo-home.html"><div class="tag">PROFITABILITY</div><h2>Home</h2><p>Drill from All India to region, warehouse or store, category and product. Every level is classified Profitable, Balanced or Loss after logistics cost.</p><span class="go">Open demo &rarr;</span></a>
+    <a class="card" href="demo-network.html"><div class="tag">DEMAND &ndash; SUPPLY</div><h2>Network control tower</h2><p>India map of warehouses and dark stores by stock health. Find the shortage, rank where stock can come from, and simulate the price impact of the transfer.</p><span class="go">Open demo &rarr;</span></a>
+    <a class="card" href="demo-cockpit.html"><div class="tag">LIVE OPERATIONS</div><h2>Cockpit</h2><p>Revenue and margin trend, data-quality issues by severity and region, delivery performance, reorder actions and AI-written validation notes.</p><span class="go">Open demo &rarr;</span></a>
+  </div>
+  <div class="foot">Source code, architecture and setup: <a href="https://github.com/sar-26/supply-chain-de">github.com/sar-26/supply-chain-de</a></div>
+</div></body></html>

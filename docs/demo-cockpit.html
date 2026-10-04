@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Supply Chain · Ops Command</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0B0E14; --panel:#131926; --panel2:#0F1420; --line:#212C40;
+    --text:#EAEEF5; --muted:#7E8AA0;
+    --cyan:#34D3EE; --red:#FF5D5D; --amber:#FFB020; --green:#3DD68C; --radius:14px;
+    padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);font-family:"Inter",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .num{font-family:"Space Grotesk",monospace;font-variant-numeric:tabular-nums}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:16px 26px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:600;font-size:16px}
+  .brand .glyph{color:var(--cyan);font-size:20px}
+  .brand small{color:var(--muted);font-weight:400}
+  .status{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .live{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+  .pulse{width:9px;height:9px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(61,214,140,.6)}70%{box-shadow:0 0 0 8px rgba(61,214,140,0)}100%{box-shadow:0 0 0 0 rgba(61,214,140,0)}}
+  @media (prefers-reduced-motion:reduce){.pulse{animation:none}}
+  .seg{display:inline-flex;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:3px}
+  .seg button{background:none;border:0;color:var(--muted);font:inherit;font-size:13px;padding:6px 12px;border-radius:7px;cursor:pointer;transition:.15s}
+  .seg button.on{background:var(--cyan);color:#06222a;font-weight:600}
+  .seg button:hover:not(.on){color:var(--text)}
+  .wrap{padding:22px 26px;max-width:1320px;margin:0 auto}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:22px}
+  .kpi{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;overflow:hidden}
+  .kpi::before{content:"";position:absolute;left:0;top:0;height:100%;width:3px;background:var(--cyan)}
+  .kpi.red::before{background:var(--red)} .kpi.amber::before{background:var(--amber)}
+  .kpi .k-label{font-size:12.5px;color:var(--muted)}
+  .kpi .k-val{font-size:29px;font-weight:600;margin-top:8px;line-height:1}
+  .kpi.red .k-val{color:var(--red)} .kpi.amber .k-val{color:var(--amber)}
+  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;min-width:0}
+  .panel h2{font-size:14px;margin:0;font-weight:600}
+  .p-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:12px}
+  .span8{grid-column:span 8} .span6{grid-column:span 6} .span4{grid-column:span 4} .span12{grid-column:span 12}
+  @media(max-width:960px){.span8,.span6,.span4{grid-column:span 12}}
+  canvas{max-height:260px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:500}
+  td.r,th.r{text-align:right} td.r{font-family:"Space Grotesk";font-variant-numeric:tabular-nums}
+  .note{border-left:3px solid var(--line);padding:12px 16px;margin-bottom:10px;background:var(--panel2);border-radius:0 8px 8px 0}
+  .note.RED{border-left-color:var(--red)} .note.AMBER{border-left-color:var(--amber)}
+  .note .h{font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .badge{font-size:11px;padding:2px 9px;border-radius:20px;color:#0B0E14;font-weight:600}
+  .badge.RED{background:var(--red)} .badge.AMBER{background:var(--amber)}
+  .note .cnt{color:var(--muted);font-weight:400;font-size:12.5px}
+  .note p{margin:8px 0 0;font-size:13px;line-height:1.5} .note .act{color:var(--muted)}
+  .empty{color:var(--muted);font-size:13px;padding:8px 2px}
+</style>
+</head>
+<body><a href="./" style="position:fixed;left:14px;bottom:14px;z-index:50;background:#0F1420;color:#7E8AA0;border:1px solid #212C40;border-radius:20px;padding:7px 13px;font:500 12.5px Inter,system-ui,sans-serif;text-decoration:none">&larr; All demos</a>
+<div class="topbar">
+  <div class="brand"><span class="glyph">⬡</span> Ops Command <small>· quick-commerce supply chain</small></div>
+  <div class="status">
+    <span class="live"><span class="pulse"></span><span id="updated">Live · sample data</span></span>
+    <div class="seg" id="regionSeg">
+      <button data-region="ALL" class="on">All India</button>
+      <button data-region="North">North</button><button data-region="South">South</button>
+      <button data-region="East">East</button><button data-region="West">West</button>
+    </div>
+  </div>
+</div>
+<div class="wrap">
+  <div class="kpis">
+    <div class="kpi"><div class="k-label">Revenue</div><div class="k-val num" id="revenue">–</div></div>
+    <div class="kpi"><div class="k-label">Gross profit</div><div class="k-val num" id="profit">–</div></div>
+    <div class="kpi"><div class="k-label">Gross margin</div><div class="k-val num" id="margin">–</div></div>
+    <div class="kpi"><div class="k-label">Open issues</div><div class="k-val num" id="issues">–</div></div>
+    <div class="kpi red"><div class="k-label">Critical (red)</div><div class="k-val num" id="red">–</div></div>
+    <div class="kpi amber"><div class="k-label">SKUs to reorder</div><div class="k-val num" id="reorder">–</div></div>
+  </div>
+  <div class="grid">
+    <div class="panel span8"><div class="p-head"><h2>Revenue &amp; margin</h2>
+      <div class="seg" id="daySeg"><button data-days="30" class="on">30d</button><button data-days="60">60d</button><button data-days="90">90d</button></div></div>
+      <canvas id="trend"></canvas></div>
+    <div class="panel span4"><div class="p-head"><h2>Issue severity</h2></div><canvas id="sev"></canvas></div>
+    <div class="panel span6"><div class="p-head"><h2>Issues by region</h2></div><canvas id="region"></canvas></div>
+    <div class="panel span6"><div class="p-head"><h2>Revenue by category</h2></div><canvas id="cat"></canvas></div>
+    <div class="panel span6"><div class="p-head"><h2>Delivery performance</h2></div>
+      <table><thead><tr><th>Carrier</th><th class="r">Avg hrs</th><th class="r">Shipments</th><th class="r">SLA breach</th></tr></thead><tbody id="deliveryBody"></tbody></table></div>
+    <div class="panel span6"><div class="p-head"><h2>Top reorder actions</h2></div>
+      <table><thead><tr><th>SKU</th><th>City</th><th class="r">Reorder pt</th><th class="r">On hand</th><th class="r">Transfer</th></tr></thead><tbody id="recBody"></tbody></table></div>
+    <div class="panel span12"><div class="p-head"><h2>AI validation notes</h2></div><div id="notes"></div></div>
+  </div>
+</div>
+<script>
+const C={cyan:"#34D3EE",red:"#FF5D5D",amber:"#FFB020",green:"#3DD68C",muted:"#7E8AA0",line:"#212C40"};
+Chart.defaults.color=C.muted;Chart.defaults.font.family="Inter, sans-serif";Chart.defaults.font.size=12;
+const fmt=n=>Number(n).toLocaleString("en-IN"),money=n=>"₹"+Number(n).toLocaleString("en-IN");
+// ---- sample data (real headline figures where known) ----
+const KPI={ALL:{revenue:32617541,profit:11511155,issues:10838,red:1074,reorder:6186},
+ North:{revenue:9100000,profit:3180000,issues:3550,red:320,reorder:1760},
+ South:{revenue:9400000,profit:3320000,issues:2540,red:250,reorder:1620},
+ East:{revenue:6900000,profit:2410000,issues:2230,red:180,reorder:1410},
+ West:{revenue:7217541,profit:2601155,issues:2518,red:324,reorder:1396}};
+const REGION_ISSUES=[{region:"East",red:180,amber:2050},{region:"North",red:320,amber:3230},{region:"South",red:250,amber:2290},{region:"West",red:324,amber:2194}];
+const CAT=[["Grocery Staples",7200000],["Personal Care",6100000],["Household",5200000],["Beverages",4600000],["Dairy",4100000],["Snacks",3000000],["Fruits & Veg",2417541]];
+const DELIVERY=[["Delhivery",1.6,4210,6.8],["Ecom Express",1.9,3980,9.2],["Shadowfax",1.4,4020,4.1],["InHouse Fleet",1.2,4380,2.3],["Porter",2.1,4354,12.6]];
+const RECO=[["SKU00284","Chennai","South",13,-46,64],["SKU00091","Kolkata","East",6,-54,63],["SKU00153","Mumbai","West",13,-43,61],["SKU00142","Bengaluru","South",12,-42,58],["SKU00289","Patna","East",12,-43,58],["SKU00036","Kolkata","East",10,-41,55],["SKU00296","Kochi","South",5,-48,55],["SKU00183","Bengaluru","South",5,-47,54],["SKU00220","Lucknow","North",9,-43,54],["SKU00234","Kochi","South",8,-42,53]];
+const NOTES=[
+ {c:"HIGH_FREIGHT_RATIO",s:"RED",n:1012,e:"Freight costs consume 30–359% of order value across 1,012 shipments (target ≤15%), a severe logistics inefficiency eroding margins and making these orders unprofitable — often wrong delivery zones or very-low-value orders.",r:"Audit the flagged shipments by origin–destination zone and order-value tier, cross-check freight logic against the carrier rate card, and fix data-entry errors before fulfilment."},
+ {c:"NEGATIVE_STOCK",s:"RED",n:62,e:"Negative stock across 62 SKU-location pairs means records show more sold than received — a critical shortage of 500–1,100 units risking order rejection on delivery promises.",r:"Run a cycle count on these 62 pairs, reconcile against receipts and returns, and correct records before allocating more orders there."},
+ {c:"HIGH_FREIGHT_RATIO",s:"AMBER",n:1324,e:"1,324 orders have freight at 15–30% of order value, above the 15% threshold — likely inefficient last-mile routing or low-value orders quietly eroding margin.",r:"Segment by distance and pincode cluster; consolidate routes or set minimum-order thresholds where high-ratio orders concentrate."},
+ {c:"NEGATIVE_STOCK",s:"AMBER",n:8440,e:"Negative stock across 8,440 SKU-location combinations shows demand outrunning replenishment — this masks real stockouts in a speed-critical quick-commerce operation.",r:"Cycle-count the top 500 by shortfall, then raise reorder frequency or safety stock for the affected SKUs."}];
+const REG={North:1,South:1,East:1,West:1};
+const share=r=>r==="ALL"?1:KPI[r].revenue/KPI.ALL.revenue;
+// ---- 90-day trend (sample, weekend + mid-window festival bump) ----
+const TREND=(()=>{const a=[],base=KPI.ALL.revenue/120;let d=new Date(2026,0,31);
+ for(let i=0;i<90;i++){const day=new Date(d);day.setDate(d.getDate()+i);
+  const wknd=(day.getDay()===0||day.getDay()===6)?1.25:1;
+  const holi=(i>40&&i<52)?1.35:1; const noise=0.85+((i*37)%20)/100;
+  const rev=Math.round(base*wknd*holi*noise);
+  a.push({day:day.toISOString().slice(5,10),revenue:rev,profit:Math.round(rev*0.353)});}
+ return a;})();
+let state={region:"ALL",days:30},trend,sev,region,cat;
+function init(){
+ trend=new Chart(document.getElementById("trend"),{type:"line",data:{labels:[],datasets:[
+   {label:"Revenue",data:[],borderColor:C.cyan,backgroundColor:C.cyan+"1A",fill:true,tension:.3,pointRadius:0,borderWidth:2},
+   {label:"Gross profit",data:[],borderColor:C.green,fill:false,tension:.3,pointRadius:0,borderWidth:2}]},
+   options:{interaction:{mode:"index",intersect:false},scales:{x:{grid:{color:C.line},ticks:{maxTicksLimit:8}},y:{grid:{color:C.line},ticks:{callback:v=>"₹"+(v/1000)+"k"}}},plugins:{legend:{position:"top",align:"end",labels:{boxWidth:10,usePointStyle:true}}}}});
+ sev=new Chart(document.getElementById("sev"),{type:"doughnut",data:{labels:[],datasets:[{data:[],backgroundColor:[],borderColor:"#131926",borderWidth:2}]},options:{cutout:"62%",plugins:{legend:{position:"bottom",labels:{boxWidth:10,usePointStyle:true}}}}});
+ region=new Chart(document.getElementById("region"),{type:"bar",data:{labels:REGION_ISSUES.map(r=>r.region),datasets:[
+   {label:"Critical",data:REGION_ISSUES.map(r=>r.red),backgroundColor:C.red,stack:"s"},
+   {label:"Warning",data:REGION_ISSUES.map(r=>r.amber),backgroundColor:C.amber,stack:"s"}]},
+   options:{scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,grid:{color:C.line}}},plugins:{legend:{position:"top",align:"end",labels:{boxWidth:10,usePointStyle:true}}}}});
+ cat=new Chart(document.getElementById("cat"),{type:"bar",data:{labels:[],datasets:[{data:[],backgroundColor:C.cyan+"CC",borderRadius:4}]},options:{indexAxis:"y",scales:{x:{grid:{color:C.line},ticks:{callback:v=>"₹"+(v/1000)+"k"}},y:{grid:{display:false}}},plugins:{legend:{display:false}}}});
+}
+function drawTrend(){const s=share(state.region),t=TREND.slice(-state.days);
+ trend.data.labels=t.map(r=>r.day);
+ trend.data.datasets[0].data=t.map(r=>Math.round(r.revenue*s));
+ trend.data.datasets[1].data=t.map(r=>Math.round(r.profit*s));trend.update();}
+function render(){
+ const k=KPI[state.region];
+ document.getElementById("revenue").textContent=money(k.revenue);
+ document.getElementById("profit").textContent=money(k.profit);
+ document.getElementById("margin").textContent=(k.profit/k.revenue*100).toFixed(1)+"%";
+ document.getElementById("issues").textContent=fmt(k.issues);
+ document.getElementById("red").textContent=fmt(k.red);
+ document.getElementById("reorder").textContent=fmt(k.reorder);
+ sev.data.labels=["Critical","Warning"];sev.data.datasets[0].data=[k.red,k.issues-k.red];
+ sev.data.datasets[0].backgroundColor=[C.red,C.amber];sev.update();
+ const s=share(state.region);
+ cat.data.labels=CAT.map(c=>c[0]);cat.data.datasets[0].data=CAT.map(c=>Math.round(c[1]*s));cat.update();
+ document.getElementById("deliveryBody").innerHTML=DELIVERY.map(d=>{const col=d[3]>10?C.red:d[3]>5?C.amber:C.green;
+   return `<tr><td>${d[0]}</td><td class="r">${d[1]}</td><td class="r">${fmt(Math.round(d[2]*s))}</td><td class="r" style="color:${col}">${d[3]}%</td></tr>`;}).join("");
+ const rows=RECO.filter(r=>state.region==="ALL"||r[2]===state.region);
+ document.getElementById("recBody").innerHTML=rows.length?rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td class="r">${r[3]}</td><td class="r">${r[4]}</td><td class="r">${r[5]}</td></tr>`).join(""):'<tr><td colspan="5" class="empty">Nothing in the top-10 for this region.</td></tr>';
+ document.getElementById("notes").innerHTML=NOTES.map(n=>`<div class="note ${n.s}"><div class="h">${n.c}<span class="badge ${n.s}">${n.s==="RED"?"Critical":"Warning"}</span><span class="cnt">${fmt(n.n)} records</span></div><p>${n.e}</p><p class="act"><strong>Action:</strong> ${n.r}</p></div>`).join("");
+ drawTrend();
+}
+function wire(id,key,after){document.getElementById(id).addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;[...e.currentTarget.children].forEach(x=>x.classList.remove("on"));b.classList.add("on");state[key]=b.dataset[key];after();});}
+wire("regionSeg","region",render);wire("daySeg","days",drawTrend);
+init();render();
+</script>
+</body>
+</html>

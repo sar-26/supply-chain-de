@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Supply Chain · Lists</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0B0E14;--panel:#131926;--panel2:#0F1420;--line:#212C40;--text:#EAEEF5;--muted:#7E8AA0;--cyan:#34D3EE;--red:#FF5D5D;--amber:#FFB020;--green:#3DD68C;--radius:14px}
+  *{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:"Inter",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .num{font-family:"Space Grotesk";font-variant-numeric:tabular-nums}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 24px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:600;font-size:16px}.brand .glyph{color:var(--cyan);font-size:20px}
+  .nav{display:flex;gap:4px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:3px}
+  .nav a{color:var(--muted);text-decoration:none;font-size:13px;padding:6px 14px;border-radius:7px}.nav a.on{background:var(--cyan);color:#06222a;font-weight:600}
+  .live{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}.pulse{width:9px;height:9px;border-radius:50%;background:var(--green)}
+  .wrap{padding:18px 24px;max-width:1200px;margin:0 auto;display:grid;gap:16px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:15px 17px}
+  .panel h2{font-size:14px;margin:0 0 12px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:500;cursor:pointer}th.r,td.r{text-align:right}td.r{font-family:"Space Grotesk";font-variant-numeric:tabular-nums}
+  .badge{font-size:11px;padding:2px 9px;border-radius:20px;color:#0B0E14;font-weight:600}
+  .badge.red{background:var(--red)}.badge.amber{background:var(--amber)}.badge.green{background:var(--green)}.badge.wh{background:var(--cyan)}
+  .od{color:var(--red);font-weight:600}.okc{color:var(--muted)}.muted{color:var(--muted)}.neg{color:var(--red)}
+</style></head><body>
+<div class="topbar">
+  <div class="brand"><span class="glyph">⬡</span> Ops Command</div>
+  <div class="nav"><a href="/" onclick="return true">Cockpit</a><a class="on" href="#">Lists</a></div>
+  <div class="live"><span class="pulse"></span><span id="updated">loading…</span></div>
+</div>
+<div class="wrap">
+  <div class="panel"><h2>Warehouses</h2>
+    <table><thead><tr><th>Warehouse</th><th>Region</th><th class="r">On-hand</th><th class="r">Stores served</th><th class="r">Open POs</th><th>Status</th></tr></thead><tbody id="whBody"></tbody></table></div>
+  <div class="panel"><h2>Dark stores — highest replenishment need first</h2>
+    <table><thead><tr><th>Dark store</th><th>City</th><th>Region</th><th class="r">On-hand</th><th class="r">SKUs to reorder</th><th class="r">Transfer units</th><th>Health</th></tr></thead><tbody id="dsBody"></tbody></table></div>
+  <div class="panel"><h2>Open purchase orders — supplier status</h2>
+    <table><thead><tr><th>Supplier</th><th>Warehouse</th><th>Status</th><th class="r">Units</th><th>Expected</th><th>Flag</th></tr></thead><tbody id="poBody"></tbody></table></div>
+</div>
+<script>
+const fmt=n=>Number(Math.round(n)).toLocaleString("en-IN");
+const j=u=>fetch(u).then(r=>r.json());
+function dsHealth(u){return u>1000?["red","Critical"]:u>0?["amber","Watch"]:["green","OK"]}
+async function load(){
+  try{
+    const wh=await j("/api/warehouses");
+    document.getElementById("whBody").innerHTML=wh.map(w=>`<tr><td>${w.location_name}</td><td class="muted">${w.region}</td><td class="r">${fmt(w.on_hand)}</td><td class="r">${fmt(w.stores_served)}</td><td class="r">${fmt(w.open_pos)}${w.overdue_pos?` · <span class="od">${w.overdue_pos} late</span>`:""}</td><td>${w.overdue_pos>0?'<span class="badge amber">Watch</span>':'<span class="badge green">OK</span>'}</td></tr>`).join("");
+    const ds=await j("/api/darkstores");
+    document.getElementById("dsBody").innerHTML=ds.map(d=>{const[c,l]=dsHealth(d.transfer_units);return `<tr><td>${d.location_name}</td><td class="muted">${d.city}</td><td class="muted">${d.region}</td><td class="r ${d.on_hand<0?'neg':''}">${fmt(d.on_hand)}</td><td class="r">${fmt(d.reorder_skus)}</td><td class="r">${fmt(d.transfer_units)}</td><td><span class="badge ${c}">${l}</span></td></tr>`}).join("");
+    const po=await j("/api/open_pos");
+    document.getElementById("poBody").innerHTML=po.length?po.map(p=>`<tr><td>${p.supplier_name}</td><td class="muted">${p.warehouse}</td><td>${p.status}</td><td class="r">${fmt(p.units)}</td><td>${p.expected}</td><td class="${p.flag==='OVERDUE'?'od':'okc'}">${p.flag}</td></tr>`).join(""):'<tr><td colspan="6" class="muted">No open purchase orders — run the PO insert script.</td></tr>';
+    document.getElementById("updated").textContent="Live · "+new Date().toLocaleTimeString();
+  }catch(e){document.getElementById("updated").textContent="Error: "+e.message;}
+}
+load();setInterval(load,15000);
+</script></body></html>

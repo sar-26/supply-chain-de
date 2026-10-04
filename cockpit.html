@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Supply Chain · Cockpit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{--bg:#0B0E14;--panel:#131926;--panel2:#0F1420;--line:#212C40;--text:#EAEEF5;--muted:#7E8AA0;--cyan:#34D3EE;--red:#FF5D5D;--amber:#FFB020;--green:#3DD68C;--radius:14px;padding-top:env(safe-area-inset-top,0)}
+  *{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:"Inter",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .num{font-family:"Space Grotesk";font-variant-numeric:tabular-nums}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 24px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:600;font-size:16px}.brand .glyph{color:var(--cyan);font-size:20px}
+  .nav{display:flex;gap:4px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:3px}
+  .nav a{color:var(--muted);text-decoration:none;font-size:13px;padding:6px 14px;border-radius:7px}.nav a.on{background:var(--cyan);color:#06222a;font-weight:600}.nav a:not(.on):hover{color:var(--text)}
+  .live{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+  .pulse{width:9px;height:9px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(61,214,140,.6)}70%{box-shadow:0 0 0 8px rgba(61,214,140,0)}100%{box-shadow:0 0 0 0 rgba(61,214,140,0)}}
+  @media(prefers-reduced-motion:reduce){.pulse{animation:none}}
+  .seg{display:inline-flex;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:3px}
+  .seg button{background:none;border:0;color:var(--muted);font:inherit;font-size:13px;padding:6px 12px;border-radius:7px;cursor:pointer}
+  .seg button.on{background:var(--cyan);color:#06222a;font-weight:600}.seg button:not(.on):hover{color:var(--text)}
+  .wrap{padding:18px 24px;max-width:1360px;margin:0 auto}
+  .scope{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}.scope .lbl{color:var(--muted);font-size:13px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:13px;margin-bottom:16px}
+  .kpi{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:15px 17px;overflow:hidden}
+  .kpi::before{content:"";position:absolute;left:0;top:0;height:100%;width:3px;background:var(--cyan)}
+  .kpi.red::before{background:var(--red)}.kpi.amber::before{background:var(--amber)}
+  .kpi .l{font-size:12px;color:var(--muted)}.kpi .v{font-size:25px;font-weight:600;margin-top:7px;line-height:1}
+  .kpi.red .v{color:var(--red)}.kpi.amber .v{color:var(--amber)}
+  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:15px 17px;min-width:0}
+  .p-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px}.p-head h2{font-size:14px;margin:0;font-weight:600}
+  .span8{grid-column:span 8}.span6{grid-column:span 6}.span4{grid-column:span 4}.span12{grid-column:span 12}
+  @media(max-width:960px){.span8,.span6,.span4{grid-column:span 12}}
+  canvas{max-height:260px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:500}th.r,td.r{text-align:right}td.r{font-family:"Space Grotesk";font-variant-numeric:tabular-nums}
+  .note{border-left:3px solid var(--line);padding:12px 16px;margin-bottom:10px;background:var(--panel2);border-radius:0 8px 8px 0}
+  .note.RED{border-left-color:var(--red)}.note.AMBER{border-left-color:var(--amber)}
+  .note .h{font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .badge{font-size:11px;padding:2px 9px;border-radius:20px;color:#0B0E14;font-weight:600}.badge.RED{background:var(--red)}.badge.AMBER{background:var(--amber)}
+  .note .cnt{color:var(--muted);font-weight:400;font-size:12.5px}.note p{margin:8px 0 0;font-size:13px;line-height:1.5}.note .act{color:var(--muted)}
+  .muted{color:var(--muted)}.empty{color:var(--muted);font-size:13px;padding:8px 2px}.neg{color:var(--red)}
+</style></head><body>
+<div class="topbar">
+  <div class="brand"><span class="glyph">⬡</span> Ops Command</div>
+  <div class="nav"><a href="/home">Home</a><a class="on" href="/cockpit">Cockpit</a><a href="/lists">Lists</a><a href="/network">Network</a></div>
+  <div class="live"><span class="pulse"></span><span id="updated">connecting…</span></div>
+</div>
+<div class="wrap">
+  <div class="scope"><span class="lbl">Region</span>
+    <div class="seg" id="regionSeg">
+      <button data-region="ALL" class="on">All India</button><button data-region="North">North</button>
+      <button data-region="South">South</button><button data-region="East">East</button><button data-region="West">West</button>
+    </div>
+  </div>
+  <div class="kpis">
+    <div class="kpi"><div class="l">Revenue</div><div class="v num" id="revenue">–</div></div>
+    <div class="kpi"><div class="l">Gross profit</div><div class="v num" id="profit">–</div></div>
+    <div class="kpi"><div class="l">Gross margin</div><div class="v num" id="margin">–</div></div>
+    <div class="kpi"><div class="l">Open issues</div><div class="v num" id="issues">–</div></div>
+    <div class="kpi red"><div class="l">Critical (red)</div><div class="v num" id="red">–</div></div>
+    <div class="kpi amber"><div class="l">SKUs to reorder</div><div class="v num" id="reorder">–</div></div>
+  </div>
+  <div class="grid">
+    <div class="panel span8"><div class="p-head"><h2>Revenue &amp; gross profit</h2>
+      <div class="seg" id="daySeg"><button data-days="30" class="on">30d</button><button data-days="60">60d</button><button data-days="90">90d</button></div></div>
+      <canvas id="trend"></canvas></div>
+    <div class="panel span4"><div class="p-head"><h2>Issue severity</h2></div><canvas id="sev"></canvas></div>
+    <div class="panel span6"><div class="p-head"><h2>Issues by region</h2></div><canvas id="region"></canvas></div>
+    <div class="panel span6"><div class="p-head"><h2>Revenue by category</h2></div><canvas id="cat"></canvas></div>
+    <div class="panel span6"><div class="p-head"><h2>Delivery performance</h2></div>
+      <table><thead><tr><th>Carrier</th><th class="r">Avg hrs</th><th class="r">Shipments</th><th class="r">SLA breach</th></tr></thead><tbody id="deliveryBody"></tbody></table></div>
+    <div class="panel span6"><div class="p-head"><h2>Top reorder actions</h2></div>
+      <table><thead><tr><th>SKU</th><th>City</th><th class="r">Reorder pt</th><th class="r">On hand</th><th class="r">Transfer</th></tr></thead><tbody id="recBody"></tbody></table></div>
+    <div class="panel span12"><div class="p-head"><h2>AI validation notes</h2></div><div id="notes"></div></div>
+  </div>
+</div>
+<script>
+const C={cyan:"#34D3EE",red:"#FF5D5D",amber:"#FFB020",green:"#3DD68C",muted:"#7E8AA0",line:"#212C40"};
+Chart.defaults.color=C.muted;Chart.defaults.font.family="Inter, sans-serif";Chart.defaults.font.size=12;
+const state={region:"ALL",days:30};
+const fmt=n=>n==null?"–":Number(Math.round(n)).toLocaleString("en-IN");
+const money=n=>n==null?"–":"₹"+fmt(n);
+const compact=v=>v>=1e7?(v/1e7).toFixed(1)+"Cr":v>=1e5?(v/1e5).toFixed(1)+"L":v>=1e3?(v/1e3).toFixed(0)+"k":v;
+const set=(id,v)=>document.getElementById(id).textContent=v;
+// a failed endpoint must never blank the whole page
+const j=u=>fetch(u).then(r=>{if(!r.ok)throw new Error(r.status+" "+u);return r.json();});
+const api=(p,extra={})=>j("/api/cockpit/"+p+"?"+new URLSearchParams({region:state.region,...extra}));
+let trend,sev,region,cat;
+function initCharts(){
+  trend=new Chart(document.getElementById("trend"),{type:"line",data:{labels:[],datasets:[
+    {label:"Revenue",data:[],borderColor:C.cyan,backgroundColor:C.cyan+"1A",fill:true,tension:.3,pointRadius:0,borderWidth:2},
+    {label:"Gross profit",data:[],borderColor:C.green,fill:false,tension:.3,pointRadius:0,borderWidth:2}]},
+    options:{interaction:{mode:"index",intersect:false},scales:{x:{grid:{color:C.line},ticks:{maxTicksLimit:8}},y:{grid:{color:C.line},ticks:{callback:v=>"₹"+compact(v)}}},plugins:{legend:{position:"top",align:"end",labels:{boxWidth:10,usePointStyle:true}}}}});
+  sev=new Chart(document.getElementById("sev"),{type:"doughnut",data:{labels:[],datasets:[{data:[],backgroundColor:[],borderColor:"#131926",borderWidth:2}]},options:{cutout:"62%",plugins:{legend:{position:"bottom",labels:{boxWidth:10,usePointStyle:true}}}}});
+  region=new Chart(document.getElementById("region"),{type:"bar",data:{labels:[],datasets:[{label:"Critical",data:[],backgroundColor:C.red,stack:"s"},{label:"Warning",data:[],backgroundColor:C.amber,stack:"s"}]},
+    options:{scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,grid:{color:C.line}}},plugins:{legend:{position:"top",align:"end",labels:{boxWidth:10,usePointStyle:true}}}}});
+  cat=new Chart(document.getElementById("cat"),{type:"bar",data:{labels:[],datasets:[{label:"Revenue",data:[],backgroundColor:C.cyan+"CC",borderRadius:4}]},
+    options:{indexAxis:"y",scales:{x:{grid:{color:C.line},ticks:{callback:v=>"₹"+compact(v)}},y:{grid:{display:false}}},plugins:{legend:{display:false}}}});
+}
+async function section(name,fn,failed){try{await fn()}catch(e){console.error(name,e);failed.push(name)}}
+async function refresh(){
+  const failed=[];
+  await section("KPIs",async()=>{const k=await api("kpis");
+    set("revenue",money(k.revenue));set("profit",money(k.gross_profit));set("margin",(k.margin*100).toFixed(1)+"%");
+    set("issues",fmt(k.open_issues));set("red",fmt(k.red_issues));set("reorder",fmt(k.reorder_count));},failed);
+  await section("trend",async()=>{const t=await api("revenue_trend",{days:state.days});
+    trend.data.labels=t.map(r=>r.day.slice(5));trend.data.datasets[0].data=t.map(r=>r.rev);trend.data.datasets[1].data=t.map(r=>r.gp);trend.update();},failed);
+  await section("severity",async()=>{const s=await api("issues_by_severity");
+    sev.data.labels=s.map(r=>r.severity==="RED"?"Critical":"Warning");sev.data.datasets[0].data=s.map(r=>r.cnt);
+    sev.data.datasets[0].backgroundColor=s.map(r=>r.severity==="RED"?C.red:C.amber);sev.update();},failed);
+  await section("issues by region",async()=>{const rg=await j("/api/cockpit/issues_by_region");
+    const regs=[...new Set(rg.map(r=>r.region))];region.data.labels=regs;
+    region.data.datasets[0].data=regs.map(g=>{const x=rg.find(r=>r.region===g&&r.severity==="RED");return x?x.cnt:0});
+    region.data.datasets[1].data=regs.map(g=>{const x=rg.find(r=>r.region===g&&r.severity==="AMBER");return x?x.cnt:0});region.update();},failed);
+  await section("categories",async()=>{const cc=await api("revenue_by_category");
+    cat.data.labels=cc.map(r=>r.category);cat.data.datasets[0].data=cc.map(r=>r.rev);cat.update();},failed);
+  await section("delivery",async()=>{const dv=await api("delivery");
+    document.getElementById("deliveryBody").innerHTML=dv.map(r=>{const col=r.sla_breach_pct>10?C.red:r.sla_breach_pct>5?C.amber:C.green;
+      return `<tr><td>${r.carrier}</td><td class="r">${r.avg_hours}</td><td class="r">${fmt(r.shipments)}</td><td class="r" style="color:${col}">${r.sla_breach_pct}%</td></tr>`}).join("")
+      ||'<tr><td colspan="4" class="empty">No shipments in this region.</td></tr>';},failed);
+  await section("reorder",async()=>{const rec=await api("top_recommendations");
+    document.getElementById("recBody").innerHTML=rec.map(r=>`<tr><td>${r.sku}</td><td>${r.city}</td><td class="r">${fmt(r.reorder_point)}</td><td class="r ${r.stock_on_hand<0?'neg':''}">${fmt(r.stock_on_hand)}</td><td class="r">${fmt(r.transfer_qty)}</td></tr>`).join("")
+      ||'<tr><td colspan="5" class="empty">Nothing needs reordering here.</td></tr>';},failed);
+  await section("AI notes",async()=>{const notes=await j("/api/cockpit/ai_notes");
+    document.getElementById("notes").innerHTML=notes.map(n=>`<div class="note ${n.severity}"><div class="h">${n.check_name}
+      <span class="badge ${n.severity}">${n.severity==="RED"?"Critical":"Warning"}</span><span class="cnt">${fmt(n.issue_count)} records</span></div>
+      <p>${n.explanation||""}</p><p class="act"><strong>Action:</strong> ${n.recommendation||""}</p></div>`).join("")
+      ||'<div class="empty">No AI notes yet — run validate_issues.py.</div>';},failed);
+  set("updated",failed.length?("Partial · unavailable: "+failed.join(", ")):("Live · "+new Date().toLocaleTimeString()));
+}
+function wire(id,key,after){document.getElementById(id).addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+  [...e.currentTarget.children].forEach(x=>x.classList.remove("on"));b.classList.add("on");state[key]=b.dataset[key];after();});}
+wire("regionSeg","region",refresh);wire("daySeg","days",refresh);
+initCharts();refresh();setInterval(refresh,15000);
+</script></body></html>

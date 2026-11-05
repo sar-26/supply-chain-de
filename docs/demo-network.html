@@ -85,16 +85,16 @@ function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15
 const rand=rng(61);
 function hav(a,b){const R=6371,dLat=(b[1]-a[1])*Math.PI/180,dLon=(b[0]-a[0])*Math.PI/180,la1=a[1]*Math.PI/180,la2=b[1]*Math.PI/180;const h=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return Math.round(2*R*Math.asin(Math.sqrt(h)))}
 function transferCost(U,d){return Math.round(800+12*d+0.03*U*d)}   // handling + per-km + per-unit-km
-function prodForCat(cat,sev){const n=sev==="red"?3:2,a=[];for(let i=0;i<n;i++){const oh=-(8+Math.floor(rand()*50)),rp=5+Math.floor(rand()*12);a.push({sku:"SKU"+String(1+Math.floor(rand()*300)).padStart(5,"0"),cat,dpd:+(0.3+rand()*2.6).toFixed(1),oh,move:rp-oh+Math.floor(rand()*6)})}return a.sort((x,y)=>y.move-x.move)}
+function prodForCat(cat,sev){const n=sev==="red"?3:2,a=[],base=sev==="red"?35:sev==="amber"?12:0;for(let i=0;i<n;i++){const rp=5+Math.floor(rand()*12),oh=sev==="green"?rp+20+Math.floor(rand()*80):Math.floor(rand()*9);a.push({sku:"SKU"+String(1+Math.floor(rand()*300)).padStart(5,"0"),cat,dpd:+(0.3+rand()*2.6).toFixed(1),oh,move:sev==="green"?0:base+rp-oh+Math.floor(rand()*6)})}return a.sort((x,y)=>y.move-x.move)}
 const nodes=[];let overduePOs=0;
 for(const c of Object.keys(WH)){const city=WH[c];const npo=2+Math.floor(rand()*3);const pos=[];
   for(let k=0;k<npo;k++){const days=Math.floor(rand()*18)-7;const od=days<0;if(od)overduePOs++;pos.push({sup:SUPS[Math.floor(rand()*SUPS.length)],days,od,units:100+Math.floor(rand()*500)});}
   nodes.push({id:"WH_"+city,name:city+" mother WH",type:"WH",city,region:c,lonlat:CITY[city],sev:rand()<0.25?"amber":"green",inbound:3000+Math.floor(rand()*4000),outbound:2200+Math.floor(rand()*3000),surplus:9000+Math.floor(rand()*8000),coverage:6+Math.floor(rand()*10),pos});}
-for(const city of Object.keys(CITY)){const region=REGION[city];for(let s=0;s<2;s++){const roll=rand();const sev=roll<0.3?"red":roll<0.62?"amber":"green";const[lo,la]=CITY[city];const lon=lo+(rand()-0.5)*0.5,lat=la+(rand()-0.5)*0.5;
+for(const city of Object.keys(CITY)){const region=REGION[city];for(let s=0;s<2;s++){const roll=rand();const profile=roll<0.3?"red":roll<0.62?"amber":"green";const[lo,la]=CITY[city];const lon=lo+(rand()-0.5)*0.5,lat=la+(rand()-0.5)*0.5;
   const cat=CATS.map(cn=>({cat:cn,dpd:+(0.3+rand()*4).toFixed(1)})).sort((a,b)=>b.dpd-a.dpd);
-  const catProd={};cat.forEach(c=>catProd[c.cat]=prodForCat(c.cat,sev));
+  const catProd={};cat.forEach(c=>catProd[c.cat]=prodForCat(c.cat,profile));
   const allP=[].concat(...Object.values(catProd)).sort((a,b)=>b.move-a.move).slice(0,6);
-  const short=allP.reduce((t,x)=>t+Math.max(0,x.move),0);
+  const short=allP.reduce((t,x)=>t+Math.max(0,x.move),0);const sev=short>200?"red":short>0?"amber":"green";   // health DERIVED from shortfall (same rule as live tier())
   const avgPrice=90+Math.floor(rand()*140);const avgCost=Math.round(avgPrice*(0.55+rand()*0.18));
   nodes.push({id:"DS_"+city+s,name:city+" DS-"+(s+1),type:"DS",city,region,lonlat:[lon,lat],sev,cat,catProd,skus:allP,shortUnits:short,avgPrice,avgCost,inbound:200+Math.floor(rand()*500),outbound:180+Math.floor(rand()*520)});}}
 
@@ -176,7 +176,7 @@ function renderPanel(n){simSrc=null;const back=`<button class="backbtn" onclick=
   const prods=selCat?n.catProd[selCat]:n.skus;
   const ptitle=selCat?`Products in ${selCat} <span class="clearcat" onclick="clearCat()">show all</span>`:"Top products in demand &amp; short";
   document.getElementById("side").innerHTML=back+`<h3>${n.name}</h3><div class="sub">Dark store · ${n.city}, ${n.region}</div><span class="badge ${n.sev}">${n.sev==="red"?"Critical":n.sev==="amber"?"Watch":"Healthy"}</span>
-    <div class="metrics"><div class="m"><div class="l">Categories short</div><div class="v num">${n.cat.length}</div></div><div class="m"><div class="l">Total shortfall</div><div class="v num">${fmt(n.shortUnits)}</div></div></div>
+    <div class="metrics"><div class="m"><div class="l">Categories short</div><div class="v num">${n.cat.filter(c=>(n.catProd[c.cat]||[]).some(p=>p.move>0)).length}</div></div><div class="m"><div class="l">Total shortfall</div><div class="v num">${fmt(n.shortUnits)}</div></div></div>
     <div class="flow"><span class="in">Inbound 7d <b>${fmt(n.inbound)}</b></span><span class="arrow">→</span><span class="out">Outbound 7d <b>${fmt(n.outbound)}</b></span></div>
     <div class="sect">Demand by category — tap to see products</div>${cats}
     <div class="sect">${ptitle}</div>
